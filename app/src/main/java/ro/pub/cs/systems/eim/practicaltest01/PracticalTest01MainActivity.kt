@@ -1,11 +1,13 @@
 package ro.pub.cs.systems.eim.practicaltest01
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.webkit.WebView
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -16,6 +18,7 @@ class PracticalTest01MainActivity : AppCompatActivity() {
     private lateinit var  rightButton: Button
     private lateinit var leftEditText: EditText
     private lateinit var rightEditText: EditText
+    private lateinit var navigateButton: Button
 
     private val genericButtonClickListener = GenericButtonClickListener()
 
@@ -32,6 +35,15 @@ class PracticalTest01MainActivity : AppCompatActivity() {
                     val int_val = value.toInt() + 1
                     rightEditText.setText(int_val.toString())
                 }
+                R.id.navigate_button_good -> {
+                    val leftCount = leftEditText.text.toString().toInt()
+                    val rightCount = rightEditText.text.toString().toInt()
+                    val sum = leftCount + rightCount
+                    val intent = Intent(this@PracticalTest01MainActivity, PracticalTest01SecondaryActivity::class.java)
+                    intent.putExtra("sum", sum.toString())
+                    startActivityForResult(intent, 1)
+
+                }
             }
         }
     }
@@ -45,9 +57,11 @@ class PracticalTest01MainActivity : AppCompatActivity() {
         rightButton = findViewById<View>(R.id.right_button) as Button
         leftEditText = findViewById<View>(R.id.left_text) as EditText
         rightEditText = findViewById<View>(R.id.right_text) as EditText
+        navigateButton = findViewById<View>(R.id.navigate_button_good) as Button
 
         leftButton.setOnClickListener(genericButtonClickListener)
         rightButton.setOnClickListener(genericButtonClickListener)
+        navigateButton.setOnClickListener(genericButtonClickListener)
     }
 
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
@@ -65,5 +79,16 @@ class PracticalTest01MainActivity : AppCompatActivity() {
         if (savedInstanceState.containsKey("rightEditText")) {
             rightEditText.setText(savedInstanceState.getString("rightEditText"))
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
+       if (requestCode == 1) {
+           if (resultCode == RESULT_OK) {
+               Toast.makeText(this, "Result from secondary activity: OK", Toast.LENGTH_LONG).show()
+           } else if (resultCode == RESULT_CANCELED) {
+               Toast.makeText(this, "Result from secondary activity: CANCELED", Toast.LENGTH_LONG).show()
+           }
+       }
     }
 }
