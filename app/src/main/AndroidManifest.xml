@@ -22,6 +22,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".PracticalTest01SecondaryActivity" />
+
+        <service
+            android:name=".PracticalTest01Service"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

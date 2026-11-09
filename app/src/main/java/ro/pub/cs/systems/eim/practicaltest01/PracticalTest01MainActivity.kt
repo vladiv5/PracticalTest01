@@ -1,6 +1,10 @@
 package ro.pub.cs.systems.eim.practicaltest01
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -19,6 +23,7 @@ class PracticalTest01MainActivity : AppCompatActivity() {
     private lateinit var leftEditText: EditText
     private lateinit var rightEditText: EditText
     private lateinit var navigateButton: Button
+    private final var THRESHOLD = 5
 
     private val genericButtonClickListener = GenericButtonClickListener()
 
@@ -29,11 +34,25 @@ class PracticalTest01MainActivity : AppCompatActivity() {
                     val value = leftEditText.text.toString()
                     val int_val = value.toInt() + 1
                     leftEditText.setText(int_val.toString())
+
+                    if (int_val + rightEditText.text.toString().toInt() > THRESHOLD) {
+                        val intent = Intent(this@PracticalTest01MainActivity, PracticalTest01Service::class.java)
+                        intent.putExtra("leftVal", int_val)
+                        intent.putExtra("rightVal", rightEditText.text.toString().toInt())
+                        startService(intent)
+                    }
                 }
                 R.id.right_button -> {
                     val value = rightEditText.text.toString()
                     val int_val = value.toInt() + 1
                     rightEditText.setText(int_val.toString())
+
+                    if (int_val + leftEditText.text.toString().toInt() > THRESHOLD) {
+                        val intent = Intent(this@PracticalTest01MainActivity, PracticalTest01Service::class.java)
+                        intent.putExtra("leftVal", leftEditText.text.toString().toInt())
+                        intent.putExtra("rightVal", int_val)
+                        startService(intent)
+                    }
                 }
                 R.id.navigate_button_good -> {
                     val leftCount = leftEditText.text.toString().toInt()
@@ -46,6 +65,12 @@ class PracticalTest01MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        val intent = Intent(this, PracticalTest01Service::class.java)
+        stopService(intent)
+        super.onDestroy()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,5 +115,31 @@ class PracticalTest01MainActivity : AppCompatActivity() {
                Toast.makeText(this, "Result from secondary activity: CANCELED", Toast.LENGTH_LONG).show()
            }
        }
+    }
+
+    private val messageBroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("PracticalTest01Broadcast", intent?.getStringExtra("message") ?: "Empty")
+        }
+    }
+
+    private val intentFilter = IntentFilter().apply {
+        addAction("ro.pub.cs.systems.eim.action1")
+        addAction("ro.pub.cs.systems.eim.action2")
+        addAction("ro.pub.cs.systems.eim.action3")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(messageBroadcastReceiver, intentFilter, RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(messageBroadcastReceiver, intentFilter)
+        }
+    }
+
+    override fun onPause() {
+        unregisterReceiver(messageBroadcastReceiver)
+        super.onPause()
     }
 }
